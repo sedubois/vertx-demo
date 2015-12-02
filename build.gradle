@@ -11,11 +11,13 @@ repositories {
   }
 }
 
+version = '3.1.0'
 dependencies {
-  compile "io.vertx:vertx-core:3.1.0"
+  compile "io.vertx:vertx-core:$version"
+  compile "io.vertx:vertx-web:$version"
   testCompile "junit:junit:4.12"
-  testCompile "io.vertx:vertx-unit:3.1.0"
-}
+  testCompile "io.vertx:vertx-unit:$version"
+ }
 
 mainClassName = 'io.vertx.core.Launcher'
 
