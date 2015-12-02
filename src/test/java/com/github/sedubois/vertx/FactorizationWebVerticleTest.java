@@ -11,13 +11,13 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
-public class MyFirstVerticleTest {
+public class FactorizationWebVerticleTest {
 
   private Vertx vertx = Vertx.vertx();
 
   @Before
   public void setUp(TestContext context) {
-    vertx.deployVerticle(MyFirstVerticle.class.getName(), context.asyncAssertSuccess());
+    vertx.deployVerticle(FactorizationWebVerticle.class.getName(), context.asyncAssertSuccess());
   }
 
   @After
@@ -26,13 +26,13 @@ public class MyFirstVerticleTest {
   }
 
   @Test
-  public void repliesHello(TestContext context) {
+  public void getTasksContainsNumber(TestContext context) {
     final Async async = context.async();
 
-    vertx.createHttpClient().getNow(8080, "localhost", "/",
+    vertx.createHttpClient().getNow(8080, "localhost", "/api/tasks",
      response -> {
       response.handler(body -> {
-        context.assertTrue(body.toString().contains("Hello"));
+        context.assertTrue(body.toString().contains("151327932445664"));
         async.complete();
       });
     });
