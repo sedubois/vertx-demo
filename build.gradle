@@ -5,7 +5,7 @@ plugins {
 }
 
 repositories {
-  jcenter()
+  mavenCentral()
   maven {
     url = 'https://oss.sonatype.org/content/repositories/snapshots/'
   }
@@ -15,10 +15,13 @@ dependencies {
   compile "io.vertx:vertx-core:3.1.0"
 }
 
-mainClassName = 'com.github.sedubois.vertx.HelloWorldEmbedded'
+mainClassName = 'io.vertx.core.Launcher'
 
 shadowJar {
   classifier = 'fat'
+  manifest {
+    attributes 'Main-Verticle': 'com.github.sedubois.vertx.MyFirstVerticle'
+  }
   mergeServiceFiles {
     include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
   }
