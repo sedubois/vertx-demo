@@ -1,4 +1,4 @@
-package com.github.sedubois.vertx;
+package com.github.sedubois;
 
 import org.junit.After;
 import org.junit.Before;
@@ -11,13 +11,13 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
-public class FactorizationWebVerticleTest {
+public class MainVerticleTest {
 
   private Vertx vertx = Vertx.vertx();
 
   @Before
   public void setUp(TestContext context) {
-    vertx.deployVerticle(FactorizationWebVerticle.class.getName(), context.asyncAssertSuccess());
+    vertx.deployVerticle(MainVerticle.class.getName(), context.asyncAssertSuccess());
   }
 
   @After
@@ -26,13 +26,14 @@ public class FactorizationWebVerticleTest {
   }
 
   @Test
-  public void getTasksContainsNumber(TestContext context) {
+  // TODO use assertJ / rest assured
+  public void getTasksReturnsEmptyCollection(TestContext context) {
     final Async async = context.async();
 
     vertx.createHttpClient().getNow(8080, "localhost", "/api/tasks",
      response -> {
       response.handler(body -> {
-        context.assertTrue(body.toString().contains("151327932445664"));
+        context.assertTrue(body.toString().equals("[ ]"));
         async.complete();
       });
     });

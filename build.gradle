@@ -24,7 +24,7 @@ mainClassName = 'io.vertx.core.Launcher'
 shadowJar {
   classifier = 'fat'
   manifest {
-    attributes 'Main-Verticle': 'com.github.sedubois.vertx.FactorizationWebVerticle'
+    attributes 'Main-Verticle': 'com.github.sedubois.factorization.FactorizationWebVerticle'
   }
   mergeServiceFiles {
     include 'META-INF/services/io.vertx.core.spi.VerticleFactory'

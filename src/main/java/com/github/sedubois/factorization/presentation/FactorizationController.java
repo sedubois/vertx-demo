@@ -1,7 +1,7 @@
-package com.github.sedubois.vertx;
+package com.github.sedubois.factorization.presentation;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.github.sedubois.factorization.service.FactorizationService;
+import com.github.sedubois.factorization.FactorizationTask;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -12,16 +12,20 @@ import io.vertx.ext.web.handler.BodyHandler;
 
 import static java.util.Optional.ofNullable;
 
-public class FactorizationWebVerticle extends AbstractVerticle {
+public class FactorizationController extends AbstractVerticle {
 
-  private Map<Long, FactorizationTask> tasks = new LinkedHashMap<>();
+  private final FactorizationService service;
+
+  public FactorizationController(FactorizationService service) {
+    this.service = service;
+  }
 
   @Override
   public void start(Future<Void> future) {
-    createSomeData();
     vertx
         .createHttpServer()
         .requestHandler(getRouter()::accept)
+        // TODO make HTTP port configurable for parallel testing
         .listen(8080, result -> {
           if (result.succeeded()) {
             future.complete();
@@ -41,17 +45,10 @@ public class FactorizationWebVerticle extends AbstractVerticle {
     return router;
   }
 
-  private void createSomeData() {
-    FactorizationTask sessionA = new FactorizationTask(151327932445664L);
-    tasks.put(sessionA.getId(), sessionA);
-    FactorizationTask sessionB = new FactorizationTask(4132793244345664L);
-    tasks.put(sessionB.getId(), sessionB);
-  }
-
   private void getAll(RoutingContext routingContext) {
     routingContext.response()
         .putHeader("content-type", "application/json; charset=utf-8")
-        .end(Json.encodePrettily(tasks.values()));
+        .end(Json.encodePrettily(service.getAll()));
   }
 
   private void getOne(RoutingContext routingContext) {
@@ -59,15 +56,21 @@ public class FactorizationWebVerticle extends AbstractVerticle {
     if (id == null) {
       routingContext.response().setStatusCode(400).end();
     } else {
-      routingContext.response()
-          .putHeader("content-type", "application/json; charset=utf-8")
-          .end(Json.encodePrettily(tasks.get(id)));
+      FactorizationTask task = service.getOne(id);
+      if (task == null) {
+        routingContext.response().setStatusCode(404).end();
+      } else {
+        routingContext.response()
+            .putHeader("content-type", "application/json; charset=utf-8")
+            // TODO don't serialize null values
+            .end(Json.encodePrettily(task));
+      }
     }
   }
 
   private void addOne(RoutingContext routingContext) {
     final FactorizationTask task = Json.decodeValue(routingContext.getBodyAsString(), FactorizationTask.class);
-    tasks.put(task.getId(), task);
+    service.create(task.getNumber());
     routingContext.response()
         .setStatusCode(201)
         .putHeader("content-type", "application/json; charset=utf-8")
@@ -79,7 +82,7 @@ public class FactorizationWebVerticle extends AbstractVerticle {
     if (id == null) {
       routingContext.response().setStatusCode(400).end();
     } else {
-      tasks.remove(id);
+      service.remove(id);
     }
     routingContext.response().setStatusCode(204).end();
   }
