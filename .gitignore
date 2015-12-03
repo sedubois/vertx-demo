@@ -5,3 +5,6 @@
 # Gradle
 build/
 .gradle/
+
+# Vert.x
+.vertx
