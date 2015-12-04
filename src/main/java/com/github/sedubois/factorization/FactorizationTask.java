@@ -1,6 +1,7 @@
 package com.github.sedubois.factorization;
 
 import java.util.List;
+import java.util.Objects;
 
 public class FactorizationTask {
 
@@ -49,5 +50,25 @@ public class FactorizationTask {
   @Override
   public String toString() {
     return String.format("[id = %d, number = %d, state = %s, factors = %s]", id, number, state, factors);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    FactorizationTask task = (FactorizationTask) o;
+    return Objects.equals(id, task.id) &&
+           Objects.equals(number, task.number) &&
+           Objects.equals(state, task.state) &&
+           Objects.equals(factors, task.factors);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, number, state, factors);
   }
 }
