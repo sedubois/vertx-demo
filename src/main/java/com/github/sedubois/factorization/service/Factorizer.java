@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Factorizer {
 
+  // TODO change to parallelizable algorithm to spread across workers
   public static List<Long> factorize(long number) {
     long n = number;
     List<Long> factors = new ArrayList<>();

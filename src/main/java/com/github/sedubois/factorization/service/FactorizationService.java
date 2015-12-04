@@ -1,15 +1,18 @@
 package com.github.sedubois.factorization.service;
 
 import com.github.sedubois.factorization.FactorizationTask;
+import com.github.sedubois.factorization.FactorizationTask.State;
 import com.github.sedubois.factorization.persistence.FactorizationRepository;
 
 import java.util.Collection;
 import java.util.List;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.Json;
 
 import static com.github.sedubois.factorization.FactorizationTask.State.DONE;
 import static com.github.sedubois.factorization.FactorizationTask.State.ONGOING;
+import static com.github.sedubois.factorization.presentation.FactorizationController.BUS_ADDR;
 
 public class FactorizationService extends AbstractVerticle {
 
@@ -39,13 +42,15 @@ public class FactorizationService extends AbstractVerticle {
 
   private void factorize(FactorizationTask task) {
     vertx.executeBlocking(future -> {
-      task.setState(ONGOING);
+      setTaskState(task, ONGOING);
       List<Long> factors = Factorizer.factorize(task.getNumber());
       task.setFactors(factors);
-      task.setState(DONE);
       future.complete(task);
-    }, false, res -> {
-      System.out.println("The result is: " + res.result());
-    });
+    }, false, res -> setTaskState(task, DONE));
+  }
+
+  private void setTaskState(FactorizationTask task, State state) {
+    task.setState(state);
+    vertx.eventBus().publish(BUS_ADDR, Json.encode(task));
   }
 }

@@ -1,7 +1,7 @@
 package com.github.sedubois.factorization.presentation;
 
-import com.github.sedubois.factorization.service.FactorizationService;
 import com.github.sedubois.factorization.FactorizationTask;
+import com.github.sedubois.factorization.service.FactorizationService;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -9,11 +9,18 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.ErrorHandler;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeEventType;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.PermittedOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 import static java.util.Optional.ofNullable;
 
 public class FactorizationController extends AbstractVerticle {
 
+  public static final String BUS_ADDR = "notif";
   private final FactorizationService service;
 
   public FactorizationController(FactorizationService service) {
@@ -22,26 +29,40 @@ public class FactorizationController extends AbstractVerticle {
 
   @Override
   public void start(Future<Void> future) {
-    vertx
-        .createHttpServer()
-        .requestHandler(getRouter()::accept)
-        // TODO make HTTP port configurable for parallel testing
-        .listen(8080, result -> {
-          if (result.succeeded()) {
-            future.complete();
-          } else {
-            future.fail(result.cause());
-          }
-        });
+    vertx.createHttpServer().requestHandler(getRouter()::accept).listen(8080);
   }
 
   private Router getRouter() {
     Router router = Router.router(vertx);
-    router.get("/api/tasks").handler(this::getAll);
-    router.get("/api/tasks/:id").handler(this::getOne);
-    router.route("/api/tasks*").handler(BodyHandler.create());
-    router.post("/api/tasks").handler(this::addOne);
-    router.delete("/api/tasks/:id").handler(this::deleteOne);
+    router.route("/eventbus/*").handler(eventBusHandler());
+    router.mountSubRouter("/api", restRouter());
+    router.route().failureHandler(ErrorHandler.create(true));
+    router.route().handler(StaticHandler.create().setCachingEnabled(false));
+    return router;
+  }
+
+  private SockJSHandler eventBusHandler() {
+    BridgeOptions options = new BridgeOptions()
+        .addOutboundPermitted(new PermittedOptions().setAddressRegex(".*"));
+    return SockJSHandler
+        .create(vertx)
+        .bridge(options, event -> {
+          if (event.type() == BridgeEventType.SOCKET_CREATED) {
+            System.out.println("A socket was created");
+          }
+          event.complete(true);
+        });
+  }
+
+  private Router restRouter() {
+    Router router = Router.router(vertx);
+    router.route().consumes("application/json");
+    router.route().produces("application/json");
+    router.get("/tasks").handler(this::getAll);
+    router.get("/tasks/:id").handler(this::getOne);
+    router.route("/tasks*").handler(BodyHandler.create());
+    router.post("/tasks").handler(this::addOne);
+    router.delete("/tasks/:id").handler(this::deleteOne);
     return router;
   }
 
