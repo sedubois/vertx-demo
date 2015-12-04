@@ -30,9 +30,10 @@ public class FactorizationService extends AbstractVerticle {
     return repository.getOne(id);
   }
 
-  public void create(long number) {
+  public FactorizationTask create(long number) {
     FactorizationTask task = repository.create(number);
     factorize(task);
+    return task;
   }
 
   public void remove(long id) {

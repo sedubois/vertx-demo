@@ -55,8 +55,8 @@ public class FactorizationController {
   }
 
   private void addOne(RoutingContext routingContext) {
-    final FactorizationTask task = Json.decodeValue(routingContext.getBodyAsString(), FactorizationTask.class);
-    service.create(task.getNumber());
+    FactorizationTask task = Json.decodeValue(routingContext.getBodyAsString(), FactorizationTask.class);
+    task = service.create(task.getNumber());
     routingContext.response()
         .setStatusCode(201)
         .putHeader("content-type", "application/json; charset=utf-8")
