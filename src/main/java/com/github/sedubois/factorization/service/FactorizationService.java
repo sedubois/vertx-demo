@@ -12,7 +12,7 @@ import io.vertx.core.json.Json;
 
 import static com.github.sedubois.factorization.FactorizationTask.State.DONE;
 import static com.github.sedubois.factorization.FactorizationTask.State.ONGOING;
-import static com.github.sedubois.factorization.presentation.FactorizationController.BUS_ADDR;
+import static com.github.sedubois.MainVerticle.BUS_ADDR;
 
 public class FactorizationService extends AbstractVerticle {
 
