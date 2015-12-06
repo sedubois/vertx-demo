@@ -1,7 +1,14 @@
+buildscript {
+  dependencies {
+    classpath "net.ltgt.gradle:gradle-apt-plugin:0.4"
+  }
+}
+
 plugins {
   id 'java'
   id 'application'
   id 'com.github.johnrengelman.shadow' version '1.2.2'
+  id "net.ltgt.apt" version "0.4"
 }
 
 repositories {
@@ -11,12 +18,15 @@ repositories {
   }
 }
 
-version = '3.1.0'
+def vertxVersion = '3.1.0'
 dependencies {
-  compile "io.vertx:vertx-core:$version"
-  compile "io.vertx:vertx-web:$version"
+  compile "io.vertx:vertx-core:$vertxVersion"
+  compile "io.vertx:vertx-web:$vertxVersion"
+  compile 'com.google.dagger:dagger:2.0.2'
+  apt 'com.google.dagger:dagger-compiler:2.0.2'
+  runtime 'org.glassfish:javax.annotation:10.0-b28'
   testCompile "junit:junit:4.12"
-  testCompile "io.vertx:vertx-unit:$version"
+  testCompile "io.vertx:vertx-unit:$vertxVersion"
  }
 
 mainClassName = 'io.vertx.core.Launcher'

@@ -7,18 +7,23 @@ import com.github.sedubois.factorization.persistence.FactorizationRepository;
 import java.util.Collection;
 import java.util.List;
 
-import io.vertx.core.AbstractVerticle;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 
 import static com.github.sedubois.factorization.FactorizationTask.State.DONE;
 import static com.github.sedubois.factorization.FactorizationTask.State.ONGOING;
 import static com.github.sedubois.MainVerticle.BUS_ADDR;
 
-public class FactorizationService extends AbstractVerticle {
+@Singleton
+public class FactorizationService {
 
   private final FactorizationRepository repository;
 
-  public FactorizationService(FactorizationRepository repository) {
+  @Inject
+  FactorizationService(FactorizationRepository repository) {
     this.repository = repository;
   }
 
@@ -42,7 +47,7 @@ public class FactorizationService extends AbstractVerticle {
   }
 
   private void factorize(FactorizationTask task) {
-    vertx.executeBlocking(future -> {
+    Vertx.currentContext().owner().executeBlocking(future -> {
       setTaskState(task, ONGOING);
       List<Long> factors = Factorizer.factorize(task.getNumber());
       task.setFactors(factors);
@@ -52,6 +57,6 @@ public class FactorizationService extends AbstractVerticle {
 
   private void setTaskState(FactorizationTask task, State state) {
     task.setState(state);
-    vertx.eventBus().publish(BUS_ADDR, Json.encode(task));
+    Vertx.currentContext().owner().eventBus().publish(BUS_ADDR, Json.encode(task));
   }
 }

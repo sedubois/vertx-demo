@@ -3,6 +3,9 @@ package com.github.sedubois.factorization.presentation;
 import com.github.sedubois.factorization.FactorizationTask;
 import com.github.sedubois.factorization.service.FactorizationService;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
@@ -11,16 +14,18 @@ import io.vertx.ext.web.handler.BodyHandler;
 
 import static java.util.Optional.ofNullable;
 
+@Singleton
 public class FactorizationController {
 
   private final FactorizationService service;
 
-  public FactorizationController(FactorizationService service) {
+  @Inject
+  FactorizationController(FactorizationService service) {
     this.service = service;
   }
 
-  public Router getRouter(Vertx vertx) {
-    Router router = Router.router(vertx);
+  public Router getRouter() {
+    Router router = Router.router(Vertx.currentContext().owner());
     router.route().consumes("application/json");
     router.route().produces("application/json");
     router.get("/tasks").handler(this::getAll);

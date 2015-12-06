@@ -7,7 +7,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class FactorizationRepository {
+
+  @Inject
+  FactorizationRepository() {}
 
   private static final AtomicLong COUNTER = new AtomicLong();
   private final Map<Long, FactorizationTask> tasks = new LinkedHashMap<>();
