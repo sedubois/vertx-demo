@@ -1,21 +1,17 @@
 package com.github.sedubois.factorization.service;
 
 import com.github.sedubois.factorization.FactorizationTask;
-import com.github.sedubois.factorization.FactorizationTask.State;
 import com.github.sedubois.factorization.persistence.FactorizationRepository;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
 
 import static com.github.sedubois.factorization.FactorizationTask.State.DONE;
 import static com.github.sedubois.factorization.FactorizationTask.State.ONGOING;
-import static com.github.sedubois.MainVerticle.BUS_ADDR;
 
 @Singleton
 public class FactorizationService {
@@ -48,15 +44,19 @@ public class FactorizationService {
 
   private void factorize(FactorizationTask task) {
     Vertx.currentContext().owner().executeBlocking(future -> {
-      setTaskState(task, ONGOING);
-      List<Long> factors = Factorizer.factorize(task.getNumber());
-      task.setFactors(factors);
+      task.setState(ONGOING);
+      factorizeSync(task);
       future.complete(task);
-    }, false, res -> setTaskState(task, DONE));
+    }, false, res -> task.setState(DONE));
   }
 
-  private void setTaskState(FactorizationTask task, State state) {
-    task.setState(state);
-    Vertx.currentContext().owner().eventBus().publish(BUS_ADDR, Json.encode(task));
+  private void factorizeSync(FactorizationTask task) {
+    long n = task.getNumber();
+    for (long i = 2; i <= n; i++) {
+      while (n % i == 0) {
+        task.addFactor(i);
+        n /= i;
+      }
+    }
   }
 }

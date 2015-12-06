@@ -1,14 +1,20 @@
 package com.github.sedubois.factorization;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
+
+import static com.github.sedubois.MainVerticle.BUS_ADDR;
 
 public class FactorizationTask {
 
   private long id;
   private long number;
   private State state = State.CREATED;
-  private List<Long> factors;
+  private List<Long> factors = new ArrayList<>();
 
   public FactorizationTask(long id, long number) {
     this.id = id;
@@ -27,14 +33,16 @@ public class FactorizationTask {
 
   public void setState(State state) {
     this.state = state;
+    publish();
   }
 
   public State getState() {
     return state;
   }
 
-  public void setFactors(List<Long> factors) {
-    this.factors = factors;
+  public void addFactor(long factor) {
+    this.factors.add(factor);
+    publish();
   }
 
   public List<Long> getFactors() {
@@ -70,5 +78,9 @@ public class FactorizationTask {
   @Override
   public int hashCode() {
     return Objects.hash(id, number, state, factors);
+  }
+
+  private void publish() {
+    Vertx.currentContext().owner().eventBus().publish(BUS_ADDR, Json.encode(this));
   }
 }
